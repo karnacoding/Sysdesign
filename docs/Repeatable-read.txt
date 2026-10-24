@@ -69,4 +69,5 @@ mysql> select * from users;
 +----+--------+
 1 row in set (0.00 sec)
 
-Note: Reads are consistent through
+Note: Reads are consistent throughout
+Con: once read even commited changes won't reflect

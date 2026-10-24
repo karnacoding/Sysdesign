@@ -1,0 +1,48 @@
+##Terminal 1
+mysql> SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from users;
++----+------+
+| id | name |
++----+------+
+|  1 | a_t1 |
++----+------+
+1 row in set (0.00 sec)
+
+mysql> select * from users;
++----+------+
+| id | name |
++----+------+
+|  1 | Karn |
++----+------+
+
+##Terminal 2
+
+mysql> SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from users;
++----+------+
+| id | name |
++----+------+
+|  1 | a_t1 |
++----+------+
+1 row in set (0.00 sec)
+
+mysql> update users set name="Karn" where id =1; 
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> rollback;
+Query OK, 0 rows affected (0.01 sec)
+
+Note : Dirty read of data which has been rollback can cause inconsistency
+Pros : High throughput
+Cons : dirty reads
