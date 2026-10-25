@@ -1,0 +1,32 @@
+##terminal 1
+mysql> SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> update users set name = "Kundan" where id = 1;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> commit;
+Query OK, 0 rows affected (0.01 sec)
+
+##Terminal 2
+mysql> SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from users;
++----+--------+
+| id | name   |
++----+--------+
+|  1 | Kundan |
++----+--------+
+1 row in set (11.07 sec)
+
+Note : Terminal 2 waited for terminal 1 to complete
+PROS/CONS : Every read is a locking (depends on engine) read
+one txn reads while others wait 
