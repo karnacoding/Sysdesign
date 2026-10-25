@@ -1,0 +1,50 @@
+##Master
+
+CREATE USER 'repl'@'%' IDENTIFIED BY 'replpass';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+
+docker compose up -d
+docker ps
+
+PS C:\Users\kunda\Sysdesign> docker exec sysdesign-mysql         mysql -uroot -prootpass -e "SELECT * FROM sysdesign.users;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
+id      name
+1       Kundan
+2       Komal
+
+
+
+##Replica
+
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -e "CHANGE REPLICATION SOURCE TO SOURCE_HOST='mysql', SOURCE_USER='repl', SOURCE_PASSWORD='replpass', SOURCE_AUTO_POSITION=1, GET_SOURCE_PUBLIC_KEY=1; START REPLICA; SET GLOBAL super_read_only=ON; SET GLOBAL read_only=ON;"
+
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -e "SHOW REPLICA STATUS\G"
+
+
+PS C:\Users\kunda\Sysdesign> docker exec sysdesign-mysql-replica mysql -uroot -prootpass -e "SELECT * FROM sysdesign.users;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
+id      name
+1       Kundan
+2       Komal
+
+#lag
+
+PS C:\Users\kunda\Sysdesign> docker exec sysdesign-mysql-replica mysql -uroot -prootpass -e "STOP REPLICA;"
+
+docker exec sysdesign-mysql mysql -uroot -prootpass -e "INSERT INTO sysdesign.users (id, name) VALUES (201,'lag1'),(202,'lag2'),(203,'lag3');"
+
+docker exec sysdesign-mysql         mysql -uroot -prootpass -N -e "SELECT COUNT(*) FROM sysdesign.users WHERE id>=201;"
+5
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -N -e "SELECT COUNT(*) FROM sysdesign.users WHERE id>=201;"
+2
+
+docker exec sysdesign-mysql mysql -uroot -prootpass -N -e "SELECT @@global.gtid_executed;"
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -N -e "SELECT @@global.gtid_executed;"
+
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -e "STOP REPLICA; CHANGE REPLICATION SOURCE TO SOURCE_DELAY=0; START REPLICA;"
+
+
+docker exec sysdesign-mysql         mysql -uroot -prootpass -N -e "SELECT COUNT(*) FROM sysdesign.users WHERE id>=201;"
+5
+docker exec sysdesign-mysql-replica mysql -uroot -prootpass -N -e "SELECT COUNT(*) FROM sysdesign.users WHERE id>=201;"
+5

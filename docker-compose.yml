@@ -3,6 +3,7 @@ services:
     image: mysql:8.4
     container_name: sysdesign-mysql
     restart: unless-stopped
+    command: --server-id=1 --log-bin=mysql-bin --gtid-mode=ON --enforce-gtid-consistency=ON
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: sysdesign
@@ -14,5 +15,20 @@ services:
       - mysql_data:/var/lib/mysql
       - ./db/init:/docker-entrypoint-initdb.d
 
+  mysql-replica:
+    image: mysql:8.4
+    container_name: sysdesign-mysql-replica
+    restart: unless-stopped
+    command: --server-id=2 --relay-log=relay-bin --gtid-mode=ON --enforce-gtid-consistency=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+    depends_on:
+      - mysql
+
 volumes:
   mysql_data:
+  mysql_replica_data:
